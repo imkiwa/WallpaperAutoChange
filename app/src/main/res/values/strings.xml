@@ -1,0 +1,45 @@
+<resources>
+    <string name="app_name">Auto Wallpaper</string>
+    <string name="action_settings">Settings</string>
+    <string name="no_wallpapers">No wallpapers, click \'+\' to add one.</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <string name="pref_header_wallpaper">Wallpaper</string>
+    <string name="pref_enable_auto_change_title">Enable Change Wallpaper Automatically</string>
+    <string name="pref_frequency_title">Change Wallpaper Frequency</string>
+
+    <string name="key_enable_auto_change" translatable="false">enable_auto_change</string>
+    <string name="key_frequency" translatable="false">change_frequency</string>
+
+    <string-array name="pref_wallpaper_frequency_titles">
+        <item>Never</item>
+        <item>1 minute</item>
+        <item>3 minutes</item>
+        <item>5 minutes</item>
+        <item>10 minutes</item>
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>1 hour</item>
+        <item>3 hours</item>
+        <item>6 hours</item>
+        <item>12 hours</item>
+        <item>24 hours</item>
+        <item>Debug Mode (3 seconds)</item>
+    </string-array>
+
+    <string-array translatable="false" name="pref_wallpaper_frequency_values">
+        <item>0</item>
+        <item>60000</item>
+        <item>180000</item>
+        <item>300000</item>
+        <item>600000</item>
+        <item>900000</item>
+        <item>1800000</item>
+        <item>3600000</item>
+        <item>10800000</item>
+        <item>21600000</item>
+        <item>43200000</item>
+        <item>86400000</item>
+        <item>3000</item>
+    </string-array>
+</resources>

@@ -1,0 +1,17 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="@string/key_enable_auto_change"
+        android:title="@string/pref_enable_auto_change_title" />
+
+    <ListPreference
+        android:defaultValue="0"
+        android:entries="@array/pref_wallpaper_frequency_titles"
+        android:entryValues="@array/pref_wallpaper_frequency_values"
+        android:key="@string/key_frequency"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null"
+        android:title="@string/pref_frequency_title" />
+
+</PreferenceScreen>

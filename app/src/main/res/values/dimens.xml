@@ -1,0 +1,6 @@
+<resources>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="card_marginY">4dp</dimen>
+    <dimen name="card_marginX">16dp</dimen>
+    <dimen name="normal_raise">4dp</dimen>
+</resources>
