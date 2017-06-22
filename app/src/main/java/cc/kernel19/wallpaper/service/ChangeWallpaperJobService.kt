@@ -1,14 +1,9 @@
 package cc.kernel19.wallpaper.service
 
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.app.Service
 import android.app.WallpaperManager
 import android.app.job.JobParameters
 import android.app.job.JobService
 import android.content.Context
-import android.content.Intent
-import android.os.IBinder
 import android.preference.PreferenceManager
 import android.util.Log
 import cc.kernel19.wallpaper.Config
@@ -33,20 +28,14 @@ class ChangeWallpaperJobService : JobService() {
      * true: 该系统假设任务是需要一些时间并且当任务完成时需要调用jobFinished()告知系统。
      */
     override fun onStartJob(params: JobParameters?): Boolean {
-        if (getEnabledStatus()) {
-            changeWallpaper(getNextWallpaperPath())
-        }
+        Log.e("Wallpaper", "onStartJob: changing wallpaper")
+        Thread {
+            if (getEnabledStatus()) {
+                changeWallpaper(getNextWallpaperPath())
+            }
+        }.start()
         return false
     }
-
-
-//    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-//        if (intent != null && getEnabledStatus()) {
-//            changeWallpaper(getNextWallpaperPath())
-//            resetAlarm()
-//        }
-//        return START_NOT_STICKY
-//    }
 
     private fun getNextWallpaperPath(): String? {
         val preference = getSharedPreferences(Config.PREFERENCE_CURRENT, Context.MODE_PRIVATE)
@@ -61,29 +50,6 @@ class ChangeWallpaperJobService : JobService() {
 
         val pref = getSharedPreferences(Config.PREFERENCE_NAME, Context.MODE_PRIVATE)
         return pref.getString(java.lang.String.valueOf(current), null)
-    }
-
-    private fun resetAlarm() {
-        val freq = getFrequency()
-        if (freq == 0) {
-            return
-        }
-
-        val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        am.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + freq, getChangeAction())
-    }
-
-    private fun getChangeAction(): PendingIntent? {
-        val intent = Intent(applicationContext, ChangeWallpaperService::class.java)
-        intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES)
-        val action = PendingIntent.getService(this, 0, intent, 0)
-        return action
-    }
-
-    private fun getFrequency(): Int {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        val freqString = prefs.getString(getString(R.string.key_frequency), "0")
-        return Integer.parseInt(freqString)
     }
 
     private fun getEnabledStatus(): Boolean {

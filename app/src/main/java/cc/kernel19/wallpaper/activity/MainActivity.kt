@@ -1,18 +1,27 @@
 package cc.kernel19.wallpaper.activity
 
 import android.Manifest
+import android.app.AlarmManager
 import android.app.AlertDialog
+import android.app.PendingIntent
+import android.app.job.JobInfo
+import android.app.job.JobScheduler
+import android.content.ComponentName
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.util.Log
 import android.view.LayoutInflater
+import android.widget.Toast
 import cc.kernel19.wallpaper.Config
 import cc.kernel19.wallpaper.adapter.OnItemClickListener
 import cc.kernel19.wallpaper.adapter.OnItemLongClickListener
 import cc.kernel19.wallpaper.adapter.WallpaperAdapter
+import cc.kernel19.wallpaper.service.ChangeWallpaperJobService
 import cc.kernel19.wallpaper.service.ChangeWallpaperService
 import cc.kernel19.wallpaper.utils.MediaUtils
 
@@ -99,14 +108,16 @@ class MainActivity : android.support.v7.app.AppCompatActivity() {
                 AlertDialog.Builder(this).setMessage("本应用需要本地存储权限来读取本地的壁纸")
                         .setPositiveButton(android.R.string.ok, { _: DialogInterface, _: Int ->
                             ActivityCompat.requestPermissions(this@MainActivity,
-                                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE,
+                                            Manifest.permission.RECEIVE_BOOT_COMPLETED),
                                     REQUEST_PERMISSION)
                         })
                         .show()
 
             } else {
                 ActivityCompat.requestPermissions(this,
-                        arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                        arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE,
+                                Manifest.permission.RECEIVE_BOOT_COMPLETED),
                         REQUEST_PERMISSION)
             }
         }
@@ -173,8 +184,8 @@ class MainActivity : android.support.v7.app.AppCompatActivity() {
         }
 
         // Already enabled
-        if (enableAutoChange && enabled) {
-            android.util.Log.e("Wallpaper", "Already enabled")
+        if (enableAutoChange && enabled && frequency == autoChangeFrequency) {
+            android.util.Log.e("Wallpaper", "Already enabled and frequency does not change")
             return
         }
 
@@ -187,10 +198,25 @@ class MainActivity : android.support.v7.app.AppCompatActivity() {
             return
         }
 
-        val pendingIntent = android.app.PendingIntent.getService(this, 0, android.content.Intent(applicationContext, ChangeWallpaperService::class.java), 0)
-        val am = getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager
-        am.cancel(pendingIntent)
-        am.setExact(android.app.AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + frequency, pendingIntent)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Log.e("Wallpaper", "Android N")
+            val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val intent = Intent(applicationContext, ChangeWallpaperService::class.java)
+            intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES)
+            val action = PendingIntent.getService(this, 0, intent, 0)
+            am.cancel(action)
+            am.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + frequency, action)
+
+        } else {
+            val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+            val jobInfo = JobInfo.Builder(1, ComponentName(this, ChangeWallpaperJobService::class.java))
+                    .setPeriodic(frequency + 0L)
+                    .setPersisted(true)
+                    .build()
+            if (jobScheduler.schedule(jobInfo) <= 0) {
+                Toast.makeText(this, "设置任务失败", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     override fun onDestroy() {
